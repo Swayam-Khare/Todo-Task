@@ -51,6 +51,11 @@ exports.getTaskById = asyncErrorHandler(async (req, res, next) => {
     return next(error);
   }
 
-  res.status(200).json({ task });
+  res.status(200).json({
+    status: "success",
+    tasks: {
+      task
+    }
+  });
 })
 
