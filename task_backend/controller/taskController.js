@@ -1,6 +1,7 @@
 const { db } = require("../model/connection");
 const Task = db.Task;
 const asyncErrorHandler = require("../utils/asyncErrorHandler");
+const CustomError = require("../utils/customError");
 
 // -------- CREATE NEW TASKS ---------------
 exports.createTask = asyncErrorHandler(async (req, res, next) => {
@@ -25,11 +26,16 @@ exports.getAllTasks = asyncErrorHandler(async (req, res, next) => {
 
 // ---------------DELETE  TASK---------------------------
 exports.deleteTasks = asyncErrorHandler(async (req, res, next) => {
-  const id = req.params;
+  const task = await Task.findByPk(req.params.id);
+  if (!task) {
+    const error = new CustomError("Task with that id is not found", 404);
+    return next(error);
+  }
 
   await Task.destroy({
-    where: id,
+    where: { id: req.params.id },
   });
+
   res.status(204).json({
     status: "success",
     message: "Task deleted successfully",
