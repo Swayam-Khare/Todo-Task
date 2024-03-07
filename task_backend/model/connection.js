@@ -14,8 +14,6 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 db.Task = require("./taskModel")(sequelize, DataTypes);
 
-
-
 const check = async () => {
   try {
     await sequelize.authenticate();
