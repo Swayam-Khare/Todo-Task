@@ -35,3 +35,16 @@ exports.deleteTasks = asyncErrorHandler(async (req, res, next) => {
     message: "Task deleted successfully",
   });
 });
+
+// ---------------FIND TASK BY ID---------------------------
+
+exports.getTaskById = asyncErrorHandler(async (req, res, next) => {
+  const task = await Task.findOne({
+    where: {
+      id: req.params,
+    }
+  });
+
+  res.status(200).json({ task });
+})
+
