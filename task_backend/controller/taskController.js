@@ -22,4 +22,16 @@ exports.getAllTasks = asyncErrorHandler(async (req, res, next) => {
     },
   });
 });
-//  hihidenbcc
+
+// ---------------DELETE  TASK---------------------------
+exports.deleteTasks = asyncErrorHandler(async (req, res, next) => {
+  const id = req.params;
+
+  await Task.destroy({
+    where: id,
+  });
+  res.status(204).json({
+    status: "success",
+    message: "Task deleted successfully",
+  });
+});
