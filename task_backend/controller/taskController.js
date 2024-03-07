@@ -41,3 +41,26 @@ exports.deleteTasks = asyncErrorHandler(async (req, res, next) => {
     message: "Task deleted successfully",
   });
 });
+
+// ---------------FIND TASK BY ID---------------------------
+
+exports.getTaskById = asyncErrorHandler(async (req, res, next) => {
+  const task = await Task.findOne({
+    where: {
+      id: req.params,
+    }
+  });
+
+  if (!task) {
+    const error = new CustomError("ID is invalid!", 404);
+    return next(error);
+  }
+
+  res.status(200).json({
+    status: "success",
+    tasks: {
+      task
+    }
+  });
+})
+
