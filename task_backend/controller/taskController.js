@@ -1,6 +1,7 @@
 const { db } = require("../model/connection");
 const Task = db.Task;
 const asyncErrorHandler = require("../utils/asyncErrorHandler");
+const CustomError = require("../utils/customError");
 
 // -------- CREATE NEW TASKS ---------------
 exports.createTask = asyncErrorHandler(async (req, res, next) => {
@@ -44,6 +45,11 @@ exports.getTaskById = asyncErrorHandler(async (req, res, next) => {
       id: req.params,
     }
   });
+
+  if (!task) {
+    const error = new CustomError("ID is invalid!", 404);
+    return next(error);
+  }
 
   res.status(200).json({ task });
 })
