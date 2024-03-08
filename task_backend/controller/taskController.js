@@ -6,7 +6,7 @@ const CustomError = require("../utils/customError");
 // -------- CREATE NEW TASKS ---------------
 exports.createTask = asyncErrorHandler(async (req, res, next) => {
   const newTask = await Task.create(req.body);
-  res.status(201).json({
+  res.status(201).json({ 
     status: "success",
     tasks: newTask,
   });
@@ -24,43 +24,75 @@ exports.getAllTasks = asyncErrorHandler(async (req, res, next) => {
   });
 });
 
-// ---------------DELETE  TASK---------------------------
-exports.deleteTasks = asyncErrorHandler(async (req, res, next) => {
-  const task = await Task.findByPk(req.params.id);
-  if (!task) {
-    const error = new CustomError("Task with that id is not found", 404);
-    return next(error);
-  }
+// ---------------------- FIND ALL FAVOURITE TASKS --------------------
 
-  await Task.destroy({
-    where: { id: req.params.id },
+exports.getAllFavTasks = asyncErrorHandler(async (req, res, next) => {
+  const tasks = await Task.findAll({
+    where: {
+      isFav: true,
+    },
   });
-
-  res.status(204).json({
+  res.status(200).json({
     status: "success",
-    message: "Task deleted successfully",
+    count: tasks.length,
+    tasks: {
+      tasks,
+    },
   });
 });
 
-// ---------------FIND TASK BY ID---------------------------
-
-exports.getTaskById = asyncErrorHandler(async (req, res, next) => {
-  const task = await Task.findOne({
-    where: {
-      id: req.params,
-    }
-  });
-
+// ------------ GET A SPECIFIC TASK--------
+exports.getAtask = asyncErrorHandler(async (req, res, next) => {
+  const id = req.params.id;
+  const task = await Task.findByPk(id);
   if (!task) {
-    const error = new CustomError("ID is invalid!", 404);
+    const error = new CustomError("task not found!", 404);
     return next(error);
   }
-
   res.status(200).json({
     status: "success",
     tasks: {
-      task
-    }
+      task,
+    },
   });
-})
+});
 
+// ----------- DELETE A TASK --------------
+exports.deleteTask = asyncErrorHandler(async (req, res, next) => {
+  const id = req.params.id;
+  const task = await Task.findByPk(id);
+  if (!task) {
+    const error = new CustomError("task not found!", 404);
+    return next(error);
+  }
+  await Task.destroy({
+    where: {
+      id,
+    },
+  });
+
+  res.status(200).json({
+    status: "success",
+  });
+});
+
+// -------- UPDATE TASK -------------
+exports.updateTask = asyncErrorHandler(async (req, res, next) => {
+  const id = req.params.id;
+  const task = await Task.findByPk(id);
+  if (!task) {
+    const error = new CustomError("task not found!", 404);
+    return next(error);
+  }
+  const updatedTask = await Task.update(req.body, {
+    where: { id },
+    returning: true,
+  });
+  console.log(updatedTask);
+  res.status(200).json({
+    status: "success",
+    tasks: {
+      updatedTask,
+    },
+  });
+});

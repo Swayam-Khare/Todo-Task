@@ -1,8 +1,10 @@
 import { defineStore } from "pinia";
+import axios from "axios";
 
 export const useTaskStore = defineStore("taskStore", {
   state: () => ({
     tasks: [],
+    count: 0,
     loading: false,
   }),
 
@@ -10,69 +12,81 @@ export const useTaskStore = defineStore("taskStore", {
     favs() {
       return this.tasks.filter((t) => t.isFav);
     },
-
     favCount() {
-      return this.tasks.reduce((p, c) => {
-        return c.isFav ? p + 1 : p;
-      }, 0);
+      const sum = this.tasks.reduce((accumulator, currentValue) => {
+        return currentValue.isFav ? accumulator + 1 : accumulator;
+      }, 0); //initilize accumulator to 0;
+      return sum;
     },
-
-    totalCount: (state) => {
-      return state.tasks.length;
+    totalCount() {
+      // return this.tasks.length;
+      return this.count;
     },
   },
-
   actions: {
     async getTasks() {
       this.loading = true;
-      const res = await fetch("http://localhost:3000/tasks");
-      const data = await res.json();
-
-      this.tasks = data;
+      const results = await axios.get("http://localhost:3200/api/v1/tasks");
+      console.log(results.data.tasks.tasks);
+      console.log(results.data.count);
+      this.tasks = await results.data.tasks.tasks;
+      this.count = results.data.count;
       this.loading = false;
     },
-
     async addTask(task) {
-      this.tasks.push(task);
-
-      const res = await fetch('http://localhost:3000/tasks', {
-        method: 'POST',
-        body: JSON.stringify(task),
-        headers: {'Content-Type': 'application/json'}
-      })
-
+      console.log(task);
+      const config = { headers: { "Content-Type": "application/json" } };
+      const res = await axios.post(
+        "http://localhost:3200/api/v1/tasks/create",
+        task,
+        config
+      );
+      console.log(res.data.tasks);
+      // this.tasks.push(res.data.tasks);
+      this.getTasks();
       if (res.error) {
-        console.log(res.error);
+        console.log(error);
       }
     },
-
     async deleteTask(id) {
-      this.tasks = this.tasks.filter((t) => {
-        return t.id !== id;
-      });
-
-      const res = await fetch('http://localhost:3000/tasks/' + id, {
-        method: 'DELETE',
-      })
-
+      console.log(id);
+      // this.tasks = this.tasks.filter((t) => {
+      //   return t.id !== id;
+      // });
+      const res = await axios.delete(
+        "http://localhost:3200/api/v1/tasks/" + id
+      );
       if (res.error) {
-        console.log(res.error);
+        console.log(error);
       }
+      this.getTasks();
     },
-
     async toggleFav(id) {
-      const task = this.tasks.find((t) => t.id === id);
-      task.isFav = !task.isFav;
+      const task = await axios.get("http://localhost:3200/api/v1/tasks/" + id);
+      let toUpdate = task.data.tasks.task;
 
-      const res = await fetch('http://localhost:3000/tasks/' + id, {
-        method: 'PATCH',
-        body: JSON.stringify({ isFav: task.isFav}),
-        headers: {'Content-Type': 'application/json'}
-      })
-
+      // const body  = JSON.stringify({isFav = !toUpdate.isFav}),
+      console.log(toUpdate.isFav);
+      const config = { headers: { "Content-Type": "application/json" } };
+      const res = await axios.patch(
+        "http://localhost:3200/api/v1/tasks/" + id,
+        { isFav: !toUpdate.isFav },
+        config
+      );
       if (res.error) {
-        console.log(res.error);
+        console.log(error);
       }
+      this.getTasks();
     },
+
+    async updateTask(id,task){
+      const config = { headers: { "Content-Type": "application/json" } };
+      console.log('id is ',id)
+      const updateAtask = await axios.patch( "http://localhost:3200/api/v1/tasks/" + id,task,config);
+      if (updateAtask.error) {
+        console.log(error);
+      }
+      this.getTasks();
+    }
   },
 });

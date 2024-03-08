@@ -1,33 +1,56 @@
 <template>
-  <div class="task">
-    <h3>{{ task.title }}</h3>
+  <div v-if="showComponent">
+  <AllDetails :task="task" :showComponent="showComponent" />
+</div>
+<div class="task">
+<h4>{{ task.title }}</h4>
+<p>{{ task.description }}</p>
+<div class="icons">
+    <i class="material-icons" @click="toggleComponent">edit</i>
+    <i class="material-icons" @click="taskStore.deleteTask(task.id)">delete</i>
+    <i class="material-icons" :class="{ active: task.isFav }" @click="taskStore.toggleFav(task.id)">favorite</i>
+    <!-- <span class="material-symbols-outlined">
+        edit
+    </span> -->
+</div>
 
-    <div class="icons">
-
-      <i 
-        @click="taskStore.deleteTask(task.id)" 
-        class="material-icons"
-      >delete</i>
-
-      <i 
-        @click="taskStore.toggleFav(task.id)" 
-        class="material-icons" 
-        :class="{active: task.isFav}"
-      >favorite</i>
-
-    </div>
-  </div>
+</div>
 </template>
 
 <script>
-import { useTaskStore } from '@/stores/TaskStore';
-
+import AllDetails from "./AllDetails.vue";
+import { ref } from "vue";
+import {
+useTaskStore
+} from "../stores/TaskStore";
 export default {
-  props: ['task'],
-  setup() {
+name: "TaskDetails",
+props: {
+    task: Object,
+},
+components: {
+    AllDetails
+},
+methods: {
+    // clickHandler() {
+      
+    //     showComponent.value = !showComponent.value;
+    //     console.log("i got clicked",showComponent.vlaue);
+    //     // <AllDetails/>
+    //     // <router-link to='/details'></router-link>
+    // }
+},
+setup() {
     const taskStore = useTaskStore();
-
-    return { taskStore }
-  }
-}
+    const showComponent = ref(false);
+    const toggleComponent = () => {
+  showComponent.value = !showComponent.value;
+};
+    return {
+        taskStore,
+        showComponent,
+        toggleComponent
+    };
+},
+};
 </script>
